@@ -13,12 +13,7 @@ random_device randomDev;
 
 auto compareFunction = [](Edge* left, Edge* right)
 {
-    if(left->GetKey() < right->GetKey())
-        return -1;
-    else if(left->GetKey() > right->GetKey())
-        return 1;
-    else
-        return 0;
+    return left->GetKey() < right->GetKey();
 };
 
 typedef priority_queue<Edge*, vector<Edge*>, decltype(compareFunction)> wallQueue;
@@ -85,7 +80,7 @@ void PlaceEnterance(Vertex* topLeft, wallQueue& queue)
     edge->A->Visited = true;
     
     AddRelevantWalls(queue, current);
-    AddRelevantWalls(queue, edge->A);
+    AddRelevantWalls(queue, edge->A); PrintMaze(topLeft);
 }
 
 void BuildMaze(Vertex* topLeft, wallQueue& queue)
@@ -97,13 +92,13 @@ void BuildMaze(Vertex* topLeft, wallQueue& queue)
         
         if(edge->A->Visited && edge->B->Visited)
         {
-            edge->Exclude();
+            edge->Exclude(); PrintMaze(topLeft);
             continue;
         }
         
         auto vertex = edge->A->Visited ? edge->B : edge->A;
         vertex->Visited = true;
-        edge->Include();
+        edge->Include(); PrintMaze(topLeft);
         
         AddRelevantWalls(queue, vertex);
     }
