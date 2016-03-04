@@ -11,11 +11,11 @@
 
 class Vertex {
 public:
-    static const uint16_t Length = 4;
+    static const uint16_t EdgeCount = 4;
     
-    bool Visited;
+    char Label;
     Edge *Left, *Top, *Right, *Bottom;
-    Vertex() : Left(nullptr), Top(nullptr), Right(nullptr), Bottom(nullptr), Visited(false) {}
+    Vertex() : Left(nullptr), Top(nullptr), Right(nullptr), Bottom(nullptr), Label('\0') {}
     
     
     Edge* IndexOf(int i)

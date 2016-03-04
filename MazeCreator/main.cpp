@@ -18,9 +18,16 @@ auto compareFunction = [](Edge* left, Edge* right)
 
 typedef priority_queue<Edge*, vector<Edge*>, decltype(compareFunction)> wallQueue;
 
-const uint32_t mazeWidth = 10,
-               mazeHeight = 10;
+uint32_t mazeWidth = 40,
+         mazeHeight = 10;
 
+
+Vertex* startingVertex = nullptr;
+
+struct VertexInfo {
+    Vertex* vertex;
+    uint32_t distance;
+};
 
 void PrintMaze(Vertex* topLeft)
 {
@@ -32,7 +39,7 @@ void PrintMaze(Vertex* topLeft)
         stringstream verticals;
         while(current->Right)
         {
-            cout << '*' << current->Right->ToChar();
+            cout << current->Label << current->Right->ToChar();
             
             if(current->Bottom)
                 verticals << current->Bottom->ToChar() << ' ';
@@ -52,7 +59,7 @@ void PrintMaze(Vertex* topLeft)
 
 void AddRelevantWalls(wallQueue& queue, Vertex* vertex)
 {
-    for (auto i = 0; i < Vertex::Length; i++) {
+    for (auto i = 0; i < Vertex::EdgeCount; i++) {
         auto edge = vertex->IndexOf(i);
         if(edge && !edge->IsInMaze())
             queue.push(edge);
@@ -73,14 +80,15 @@ void PlaceEnterance(Vertex* topLeft, wallQueue& queue)
     for(auto i = 0; i < y; i++)
         current = current->Bottom->A;
     
-    current->Visited = true;
+    current->Label = 'S';
+    startingVertex = current;
     
     auto edge = zeroX ? current->Bottom : current->Right;
     edge->Include();
-    edge->A->Visited = true;
+    edge->A->Label = '*';
     
     AddRelevantWalls(queue, current);
-    AddRelevantWalls(queue, edge->A); PrintMaze(topLeft);
+    AddRelevantWalls(queue, edge->A);
 }
 
 void BuildMaze(Vertex* topLeft, wallQueue& queue)
@@ -90,15 +98,15 @@ void BuildMaze(Vertex* topLeft, wallQueue& queue)
         auto edge = queue.top();
         queue.pop();
         
-        if(edge->A->Visited && edge->B->Visited)
+        if(edge->A->Label && edge->B->Label)
         {
-            edge->Exclude(); PrintMaze(topLeft);
+            edge->Exclude();
             continue;
         }
         
-        auto vertex = edge->A->Visited ? edge->B : edge->A;
-        vertex->Visited = true;
-        edge->Include(); PrintMaze(topLeft);
+        auto vertex = edge->A->Label ? edge->B : edge->A;
+        vertex->Label = '*';
+        edge->Include();
         
         AddRelevantWalls(queue, vertex);
     }
@@ -154,14 +162,50 @@ Vertex* AllocateMaze()
     return topLeft;
 }
 
+VertexInfo FindFurthestVertex(Vertex* current, Vertex* last = nullptr, uint32_t distanceSoFar = 0)
+{
+    VertexInfo result = { current, distanceSoFar };
+    for (auto i = 0; i < Vertex::EdgeCount; i++)
+    {
+        auto edge = current->IndexOf(i);
+        if(edge && edge->ToChar() != ' ')
+        {
+            auto next = edge->A == current ? edge->B : edge->A;
+            if(next != last)
+            {
+                auto info = FindFurthestVertex(next, current, distanceSoFar + 1);
+
+                if(info.distance > result.distance)
+                    result = info;
+            }
+        }
+    }
+    
+    return result;
+}
 
 int main(int argc, const char * argv[]) {
+    for(auto i = 0; i < argc; i++){
+        if(!strcmp("/h", argv[i]))
+            mazeHeight = atoi(argv[++i]);
+        
+        if(!strcmp("/w", argv[i]))
+            mazeWidth = atoi(argv[++i]);
+    }
+    
+    
     wallQueue queue(compareFunction);
     auto topLeft = AllocateMaze();
     
     PlaceEnterance(topLeft, queue);
     BuildMaze(topLeft, queue);
+    
+    auto furthest = FindFurthestVertex(startingVertex);
+    furthest.vertex->Label = 'E';
+    
     PrintMaze(topLeft);
+    
+    cout << furthest.distance << endl;
     
     return 0;
 }
