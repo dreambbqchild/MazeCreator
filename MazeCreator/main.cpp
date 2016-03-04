@@ -187,10 +187,10 @@ VertexInfo FindFurthestVertex(Vertex* current, Vertex* last = nullptr, uint32_t 
 int main(int argc, const char * argv[]) {
     for(auto i = 0; i < argc; i++){
         if(!strcmp("/h", argv[i]))
-            mazeHeight = atoi(argv[++i]);
+            mazeHeight = max(1, min(1000, atoi(argv[++i])));
         
         if(!strcmp("/w", argv[i]))
-            mazeWidth = atoi(argv[++i]);
+            mazeWidth = max(1, min(1000, atoi(argv[++i])));
     }
     
     
