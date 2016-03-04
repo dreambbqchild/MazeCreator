@@ -46,7 +46,7 @@ void PrintMaze(Vertex* topLeft)
             
             current = current->Right->A;
         }
-        cout << '*' << endl;
+        cout << current->Label << endl;
         if(current->Bottom)
             cout << verticals.str() << current->Bottom->ToChar() << endl;
         
